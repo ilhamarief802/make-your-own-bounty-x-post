@@ -30,6 +30,13 @@ const SPONSOR_STATUS = '2124915864336236646';
 /** An address X itself prints for a post: /<handle>/status/<numeric id>. */
 const POST_ADDRESS = /^https:\/\/(?:www\.)?(?:x|twitter)\.com\/([A-Za-z0-9_]{1,15})\/status\/(\d{5,25})\/?$/;
 
+/** X's own Share button appends a tracking query (?s=20, ?t=...) on phones. */
+function stripTracking(url: string): string {
+  const cut = url.search(/[?#]/);
+  const bare = cut === -1 ? url : url.slice(0, cut);
+  return bare.endsWith('/') ? bare.slice(0, -1) : bare;
+}
+
 type Post = { url: string; handle: string; status: string };
 
 /** Read POST.json, or say exactly why it cannot be read. */
@@ -57,7 +64,7 @@ function readPost(file: string): Post {
     throw new Error('POST.json carries no "url" string');
   }
 
-  const match = POST_ADDRESS.exec(url.trim());
+  const match = POST_ADDRESS.exec(stripTracking(url.trim()));
   if (match === null) {
     throw new Error(`POST.json's url is not a post's address on X: ${JSON.stringify(url)}`);
   }
